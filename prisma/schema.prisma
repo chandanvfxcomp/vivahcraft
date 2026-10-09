@@ -1,0 +1,37 @@
+// VivahCraft — Wedding Invitation Builder Platform
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Template definitions (2 reusable templates)
+model Template {
+  id          String   @id @default(cuid())
+  slug        String   @unique // "royal-palace", "modern-floral"
+  name        String
+  description String
+  thumbnail   String   // preview image URL
+  price       Int      // in paise (e.g., 49900 = ₹499)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  invitations Invitation[]
+}
+
+// User's customized invitation
+model Invitation {
+  id            String   @id @default(cuid())
+  templateId    String
+  template      Template @relation(fields: [templateId], references: [id])
+  // Couple details (JSON for flexibility)
+  data          Json     // { groom, bride, date, venue, parents, events, photos, etc. }
+  watermarkPaid Boolean  @default(false)
+  paymentId     String?  // Razorpay payment ID
+  orderId       String?  // Razorpay order ID
+  downloadToken String?  @unique // for secure download link
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
